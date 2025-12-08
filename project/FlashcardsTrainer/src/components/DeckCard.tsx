@@ -1,38 +1,65 @@
-import React from "react";
+import React, { useState } from "react";
 import { View, Text, StyleSheet, Pressable } from "react-native";
 import { Link } from "expo-router";
+import FontAwesome from "@expo/vector-icons/FontAwesome";
+import { BASE_URL } from "../config";
 
 type Props = {
     id: string;
     title: string;
-    count: number;
+    isFavorite: boolean;
 };
 
-export default function DeckCard({ id, title, count }: Props) {
-    const label = count + " " + (count === 1 ? "card" : "cards");
+export default function DeckCard({ id, title, isFavorite }: Props) {
+    const [favorite, setFavorite] = useState(isFavorite);
+
+    async function toggleFavorite() {
+        try {
+            const res = await fetch(`${BASE_URL}/api/workouts/${id}/favorite`, {
+                method: "PATCH",
+            });
+            if (!res.ok) {
+                throw new Error("Failed to toggle favorite");
+            }
+            const data = await res.json();
+            setFavorite(data.isFavorite);
+        } catch (err) {
+            console.error(err);
+        }
+    }
 
     return (
-        <Link href={{ pathname: "/(decks)/deck/[id]", params: { id } }} asChild>
+        <View style={styles.row}>
+            <Link
+                href={{ pathname: "/(workouts)/workout/[id]", params: { id } }}
+                asChild
+            >
+                <Pressable style={styles.textWrap}>
+                    <Text style={styles.title}>{title}</Text>
+                </Pressable>
+            </Link>
+
             <Pressable
-                style={styles.row}>
-                <View style={styles.textWrap}>
-                    <Text style={styles.title}>
-                        {title}
-                    </Text>
-                    <Text style={styles.subtitle}>{label}</Text>
-                </View>
+                onPress={toggleFavorite}
+                style={styles.starButton}
+            >
+                <FontAwesome
+                    name={favorite ? "star" : "star-o"}
+                    size={22}
+                    color={"black"}
+                />
             </Pressable>
-        </Link>
+        </View>
     );
 }
 
 const styles = StyleSheet.create({
     row: {
         flexDirection: "row",
-        alignItems: "flex-start",
+        alignItems: "center",
         justifyContent: "space-between",
         backgroundColor: "#ffffff",
-        width: '90%',
+        width: "90%",
         borderRadius: 16,
         borderColor: "#f6f6f6",
         borderWidth: 1,
@@ -41,8 +68,11 @@ const styles = StyleSheet.create({
         marginHorizontal: "5%",
         marginVertical: 4,
     },
-    rowPressed: { opacity: 0.9 },
-    textWrap: { gap: 4 },
+    textWrap: {
+        flexShrink: 1,
+        flex: 1,
+        gap: 4,
+    },
     title: {
         fontSize: 17,
         fontWeight: "700",
@@ -51,5 +81,8 @@ const styles = StyleSheet.create({
     subtitle: {
         fontSize: 13,
         color: "#202020",
-    }
+    },
+    starButton: {
+        marginLeft: 12,
+    },
 });

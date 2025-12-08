@@ -6,6 +6,18 @@ export const getWorkoutLogs = async (req, res) => {
     res.json(workoutLogs);
 };
 
+export const getWorkoutLogsById = async (req, res) => {
+    try {
+        const workoutLogs = await Workout.findById(req.params.workoutId);
+        if (!workoutLogs) {
+            return res.status(404).json({ error: 'Logs not found' });
+        }
+        res.json(workoutLogs);
+    } catch (err) {
+        res.status(400).json({ error: err.message });
+    }
+};
+
 export const addWorkoutLogs = async (req, res) => {
     try {
         const workoutLog = new WorkoutLog(req.body);
