@@ -8,7 +8,7 @@ export const getWorkouts = async (req, res) => {
 
 export const getWorkoutById = async (req, res) => {
     try {
-        const workout = await Workout.findById(workoutId)
+        const workout = await Workout.findById(req.params.workoutId)
         if (!workout) {
             return res.status(404).json({ error: 'Workout not found' });
         }
