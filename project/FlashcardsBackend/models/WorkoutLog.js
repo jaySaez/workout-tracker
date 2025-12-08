@@ -6,4 +6,4 @@ const workoutLogSchema = new mongoose.Schema({
     notes: { type: String },
 });
 
-export const Deck = mongoose.model('WorkoutLog', workoutLogSchema);
+export const WorkoutLog = mongoose.model('WorkoutLog', workoutLogSchema);

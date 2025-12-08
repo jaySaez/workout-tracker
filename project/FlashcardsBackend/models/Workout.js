@@ -7,4 +7,4 @@ const workoutSchema = new mongoose.Schema({
     createdAt: { type: Date, default: Date.now },
 });
 
-export const Deck = mongoose.model('Workout', workoutSchema);
+export const Workout = mongoose.model('Workout', workoutSchema);
