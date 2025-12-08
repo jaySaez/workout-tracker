@@ -5,7 +5,7 @@ import mongoose from 'mongoose';
 import 'dotenv/config';
 import cors from 'cors'
 
-
+const PORT = process.env.PORT || 3000
 async function connectDB() {
     try {
         await mongoose.connect(process.env.MONGO_URI);
