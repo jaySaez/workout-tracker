@@ -6,6 +6,18 @@ export const getWorkouts = async (req, res) => {
     res.json(workouts);
 };
 
+export const getWorkoutById = async (req, res) => {
+    try {
+        const workout = await Workout.findById(workoutId)
+        if (!workout) {
+            return res.status(404).json({ error: 'Workout not found' });
+        }
+        res.json(workout);
+    } catch (err) {
+        res.status(400).json({ error: err.message });
+    }
+};
+
 export const addworkouts = async (req, res) => {
     try {
         const workout = new Workout(req.body);

@@ -25,7 +25,7 @@ export default function WorkoutDetailPage() {
                     // Fetch workout details + logs in parallel
                     const [workoutRes, logsRes] = await Promise.all([
                         fetch(`${BASE_URL}/api/workouts/${id}`),
-                        fetch(`${BASE_URL}/api/workoutLogs/${id}`), // adjust if your route differs
+                        fetch(`${BASE_URL}/api/workoutLogs/${id}`),
                     ]);
 
                     if (!workoutRes.ok) {
