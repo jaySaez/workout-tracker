@@ -14,7 +14,7 @@ async function connectDB() {
         console.error('Mongo connection error:', err);
     }
 }
- 
+
 connectDB(); // Call the async function
 
 const app = express();
@@ -25,4 +25,4 @@ app.use(cors({ origin: '*' }));
 app.use('/api/decks', decksRoutes);
 app.use('/api/cards', cardsRoutes);
 
-app.listen(3000, () => console.log('Server running on port 3000'));
+app.listen(process.env.PORT, () => console.log(`Server running on port ${PORT}`));
