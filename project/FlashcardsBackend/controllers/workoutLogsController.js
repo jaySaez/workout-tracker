@@ -1,14 +1,14 @@
-import { workoutLog } from '../models/WorkoutLog.js';
+import { WorkoutLog } from '../models/WorkoutLog.js';
 
 
 export const getWorkoutLogs = async (req, res) => {
-    const workoutLogs = await workoutLog.find();
+    const workoutLogs = await WorkoutLog.find();
     res.json(workoutLogs);
 };
 
 export const addWorkoutLogs = async (req, res) => {
     try {
-        const workoutLog = new Workout(req.body);
+        const workoutLog = new WorkoutLog(req.body);
         await workoutLog.save();
         res.status(201).json(workoutLog);
     } catch (err) {
@@ -18,7 +18,7 @@ export const addWorkoutLogs = async (req, res) => {
 
 export const deleteWorkoutLog = async (req, res) => {
     try {
-        const deleted = await workoutLog.findByIdAndDelete(req.params.workoutLogId);
+        const deleted = await WorkoutLog.findByIdAndDelete(req.params.workoutLogId);
         if (!deleted) {
             return res.status(404).json({ error: 'WorkoutLog not found' });
         }
