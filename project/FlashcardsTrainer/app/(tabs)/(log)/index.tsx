@@ -58,6 +58,9 @@ export default function Home() {
                             workoutId={item.workoutId}
                             performedAt={item.performedAt}
                             notes={item.notes}
+                            onDeleted={(id) => {
+                                setLogs((prev) => prev.filter((log) => log._id !== id));
+                            }}
                         />
                     )}
                     contentContainerStyle={{ paddingBottom: 24 }}

@@ -1,17 +1,18 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, Pressable } from "react-native";
 import { BASE_URL } from "../config";
 import { WorkoutLog, Workout } from "./types";
 
-type Props = WorkoutLog;
+type Props = WorkoutLog & {
+    onDeleted?: (id: string) => void;
+};
 
-export default function LogCard({ workoutId, performedAt, notes }: Props) {
+export default function LogCard({ _id, workoutId, performedAt, notes, onDeleted }: Props) {
     const [workoutTitle, setWorkoutTitle] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [deleting, setDeleting] = useState(false);
 
     useEffect(() => {
-        let cancelled = false;
-
         async function fetchWorkout() {
             try {
                 setError(null);
@@ -20,50 +21,67 @@ export default function LogCard({ workoutId, performedAt, notes }: Props) {
                     throw new Error(`Failed to load workout: ${res.status}`);
                 }
                 const data: Workout = await res.json();
-                if (!cancelled) {
-                    setWorkoutTitle(data.title);
-                }
+                setWorkoutTitle(data.title);
             } catch (err) {
                 console.error(err);
-                if (!cancelled) {
-                    setError("Could not load workout name");
-                }
             }
         }
 
         if (workoutId) {
             fetchWorkout();
         }
-
-        return () => {
-            cancelled = true;
-        };
     }, [workoutId]);
 
+    async function handleLongPress() {
+        if (deleting || !_id) return;
+        try {
+            setDeleting(true);
+            setError(null);
+
+            const res = await fetch(`${BASE_URL}/api/workoutLogs/${_id}`, {
+                method: "DELETE",
+            });
+
+            if (!res.ok) {
+                throw new Error(`Failed to delete log: ${res.status}`);
+            }
+
+            if (onDeleted) {
+                onDeleted(_id);
+            }
+        } catch (err) {
+            console.error(err);
+            setError("Could not delete log");
+            setDeleting(false);
+        }
+    }
 
     const performedLabel = new Date(performedAt).toLocaleString();
 
     return (
-        <View style={styles.row}>
-            <View style={styles.textWrap}>
-                <Text style={styles.title}>
-                    {workoutTitle}
-                </Text>
-                <Text style={styles.subtitle}>
-                    Performed at: {performedLabel}
-                </Text>
-                {notes ? (
-                    <Text style={styles.notes}>
-                        Notes: {notes}
+        <Pressable onLongPress={handleLongPress} disabled={deleting}>
+            <View style={styles.row}>
+                <View style={styles.textWrap}>
+                    <Text style={styles.title}>
+                        {workoutTitle}
                     </Text>
-                ) : null}
-                {error && (
-                    <Text style={styles.error}>
-                        {error}
+                    <Text style={styles.subtitle}>
+                        Performed at: {performedLabel}
                     </Text>
-                )}
+                    {notes ? (
+                        <Text style={styles.notes}>
+                            Notes: {notes}
+                        </Text>
+                    ) : null}
+                    {error && (
+                        <Text style={styles.error}>
+                            {error}
+                        </Text>
+                    )}
+                </View>
             </View>
-        </View>
+        </Pressable>
+
     );
 }
 

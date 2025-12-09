@@ -4,7 +4,7 @@ import { addWorkoutLogs, getWorkoutLogs, deleteWorkoutLog, getWorkoutLogsById } 
 const router = express.Router();
 
 router.post('/', addWorkoutLogs);
-router.delete('/:workoutId', deleteWorkoutLog);
+router.delete('/:workoutLogId', deleteWorkoutLog);
 router.get('/:workoutId', getWorkoutLogsById);
 router.get('/', getWorkoutLogs);
 
