@@ -41,10 +41,16 @@ export default function Home() {
             <View>
                 <SearchBar value={query} onChangeText={setQuery} />
                 <FlatList
-                    data={workouts}
+                    data={filtered}
                     keyExtractor={(d) => d._id}
                     renderItem={({ item }) => (
-                        <WorkoutCard id={item._id} title={item.title} isFavorite={item.isFavorite} />
+                        <WorkoutCard
+                            id={item._id}
+                            title={item.title}
+                            isFavorite={item.isFavorite}
+                            onDeleted={(deletedId) =>
+                                setWorkouts((prev) => prev.filter((w) => w._id !== deletedId))
+                            } />
                     )}
                     contentContainerStyle={{ paddingBottom: 24 }}
                     style={{ height: "94%" }}

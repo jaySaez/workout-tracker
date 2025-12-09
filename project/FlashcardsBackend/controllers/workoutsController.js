@@ -34,6 +34,9 @@ export const deleteWorkout = async (req, res) => {
         if (!deleted) {
             return res.status(404).json({ error: 'Workout not found' });
         }
+        
+        await WorkoutLog.deleteMany({ workoutId: workout._id });
+
         res.json({ message: 'Workout deleted successfully' });
     } catch (err) {
         res.status(400).json({ error: err.message });

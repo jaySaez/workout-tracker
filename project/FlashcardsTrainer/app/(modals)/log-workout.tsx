@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { View, TextInput, StyleSheet, Pressable, Text, ScrollView } from "react-native";
 import { router } from "expo-router";
 import { BASE_URL } from "../../src/config";
+import { scheduleWorkoutReminder } from "../../src/notifications";
 import { Workout } from "../../src/components/types";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 
@@ -56,7 +57,7 @@ export default function CreateWorkoutLog() {
             if (!res.ok) {
                 throw new Error(`Failed to log workout: ${res.status}`);
             }
-
+            await scheduleWorkoutReminder();
             router.dismiss();
         } catch (err) {
             console.error(err);
@@ -87,7 +88,7 @@ export default function CreateWorkoutLog() {
                                     <FontAwesome
                                         name="star"
                                         size={16}
-                                        color="gold"
+                                        color="black"
                                         style={{ marginRight: 8 }}
                                     />
                                 )}

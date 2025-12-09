@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, Pressable } from "react-native";
+import { View, Text, StyleSheet, Pressable, Alert } from "react-native";
 import { Link } from "expo-router";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { BASE_URL } from "../config";
@@ -8,9 +8,10 @@ type Props = {
     id: string;
     title: string;
     isFavorite: boolean;
+    onDeleted?: (id: string) => void;
 };
 
-export default function WorkoutCard({ id, title, isFavorite }: Props) {
+export default function WorkoutCard({ id, title, isFavorite, onDeleted }: Props) {
     const [favorite, setFavorite] = useState(isFavorite);
 
     async function toggleFavorite() {
@@ -28,13 +29,44 @@ export default function WorkoutCard({ id, title, isFavorite }: Props) {
         }
     }
 
+    function confirmDelete() {
+        Alert.alert(
+            "Delete workout",
+            "Delete this workout and all its logs?",
+            [
+                { text: "Cancel", style: "cancel" },
+                {
+                    text: "Delete",
+                    style: "destructive",
+                    onPress: async () => {
+                        try {
+                            const res = await fetch(`${BASE_URL}/api/workouts/${id}`, {
+                                method: "DELETE",
+                            });
+                            if (!res.ok) {
+                                throw new Error(`Failed to delete workout: ${res.status}`);
+                            }
+                            onDeleted?.(id);
+                        } catch (err) {
+                            console.error(err);
+                        }
+                    },
+                },
+            ]
+        );
+    }
+
     return (
         <View style={styles.row}>
             <Link
                 href={{ pathname: "/(workouts)/workout/[id]", params: { id } }}
                 asChild
             >
-                <Pressable style={styles.textWrap}>
+                <Pressable
+                    style={styles.textWrap}
+                    onLongPress={confirmDelete}
+                    delayLongPress={500}
+                >
                     <Text style={styles.title}>{title}</Text>
                 </Pressable>
             </Link>

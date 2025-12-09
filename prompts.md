@@ -1,7 +1,7 @@
 ## Prompt Log for This Assignment
 
 ### Prompt 1:
->"Replace me with a propt"
+how do i delete all mongodb items with a specific parameter value?
 
 ---
 
