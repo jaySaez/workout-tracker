@@ -10,7 +10,7 @@ type Props = {
     isFavorite: boolean;
 };
 
-export default function DeckCard({ id, title, isFavorite }: Props) {
+export default function WorkoutCard({ id, title, isFavorite }: Props) {
     const [favorite, setFavorite] = useState(isFavorite);
 
     async function toggleFavorite() {

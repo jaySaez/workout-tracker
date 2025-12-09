@@ -2,7 +2,7 @@ import { useState, useCallback } from "react";
 import { FlatList, View, Text, Pressable, StyleSheet } from "react-native";
 import { Link, useFocusEffect } from 'expo-router';
 import SearchBar from '../../../src/components/SearchBar';
-import DeckCard from "../../../src/components/DeckCard";
+import WorkoutCard from "../../../src/components/WorkoutCard";
 import { BASE_URL } from "../../../src/config";
 
 import { Workout } from "../../../src/components/types";
@@ -44,12 +44,12 @@ export default function Home() {
                     data={workouts}
                     keyExtractor={(d) => d._id}
                     renderItem={({ item }) => (
-                        <DeckCard id={item._id} title={item.title} isFavorite={item.isFavorite} />
+                        <WorkoutCard id={item._id} title={item.title} isFavorite={item.isFavorite} />
                     )}
                     contentContainerStyle={{ paddingBottom: 24 }}
                     style={{ height: "94%" }}
                 />
-                <Link href="/(modals)/create-workouts" asChild>
+                <Link href="/(modals)/create-workout" asChild>
                     <Pressable style={styles.add}>
                         <Text style={{ color: "white", fontWeight: 600, fontSize: 20 }}>+</Text>
                     </Pressable>

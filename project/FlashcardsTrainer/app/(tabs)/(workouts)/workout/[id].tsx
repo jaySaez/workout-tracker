@@ -1,6 +1,6 @@
 import { Pressable, FlatList, View, Text, StyleSheet, ActivityIndicator } from "react-native";
 import { useLocalSearchParams, Link, useFocusEffect } from "expo-router";
-import CardRow from "../../../../src/components/CardRow";
+import WorkoutDetails from "../../../../src/components/WorkoutDetails";
 import { useState, useCallback } from "react";
 import { BASE_URL } from "../../../../src/config";
 import { WorkoutLog, Workout } from "../../../../src/components/types";
@@ -21,8 +21,6 @@ export default function WorkoutDetailPage() {
             async function fetchData() {
                 try {
                     setLoading(true);
-
-                    // Fetch workout details + logs in parallel
                     const [workoutRes, logsRes] = await Promise.all([
                         fetch(`${BASE_URL}/api/workouts/${id}`),
                         fetch(`${BASE_URL}/api/workoutLogs/${id}`),
@@ -76,9 +74,8 @@ export default function WorkoutDetailPage() {
         <View style={{ flex: 1 }}>
             {workout ? (
                 <>
-                    {/* Workout card with favorite star + exercises */}
                     <View style={{ marginTop: 8, alignItems: "center" }}>
-                        <CardRow
+                        <WorkoutDetails
                             _id={workout._id}
                             title={workout.title}
                             exercises={workout.exercises}
@@ -86,17 +83,8 @@ export default function WorkoutDetailPage() {
                             createdAt={workout.createdAt}
                         />
                     </View>
-
-                    {/* Stats about completions */}
-                    <View style={styles.statsCard}>
+                    <View>
                         <Text style={styles.statsTitle}>Workout History</Text>
-                        <Text style={styles.statsText}>
-                            Completed: <Text style={styles.statsValue}>{completedCount}</Text>
-                        </Text>
-                        <Text style={styles.statsText}>
-                            Last completed:{" "}
-                            <Text style={styles.statsValue}>{lastPerformedDisplay}</Text>
-                        </Text>
                     </View>
                 </>
             ) : loading ? (
@@ -109,7 +97,6 @@ export default function WorkoutDetailPage() {
                 </View>
             )}
 
-            {/* List of individual logs */}
             <FlatList
                 style={{ marginTop: 8, height: "100%" }}
                 data={workoutLogs}
@@ -132,27 +119,14 @@ export default function WorkoutDetailPage() {
 }
 
 const styles = StyleSheet.create({
-    statsCard: {
-        backgroundColor: "#ffffff",
-        width: "90%",
-        borderRadius: 16,
-        borderColor: "#f6f6f6",
-        borderWidth: 1,
-        paddingVertical: 12,
-        paddingHorizontal: 16,
-        marginHorizontal: "5%",
-        marginTop: 8,
-    },
     statsTitle: {
-        fontSize: 16,
+        fontSize: 20,
         fontWeight: "700",
         color: "#202020",
-        marginBottom: 4,
-    },
-    statsText: {
-        fontSize: 14,
-        color: "#505050",
-        marginTop: 2,
+        paddingVertical: 10,
+        paddingBottom: 0,
+        paddingHorizontal: 10,
+        marginHorizontal: "5%",
     },
     statsValue: {
         fontWeight: "600",
@@ -178,24 +152,5 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: "#404040",
         marginTop: 4,
-    },
-    add: {
-        position: "absolute",
-        bottom: 30,
-        right: 20,
-        width: 80,
-        height: 80,
-        alignItems: "center",
-        justifyContent: "center",
-        borderWidth: 1,
-        borderRadius: 40, // half of width/height
-        borderColor: "#f6f6f6",
-        backgroundColor: "black",
-    },
-    addText: {
-        color: "white",
-        fontWeight: "600",
-        fontSize: 32,
-        marginTop: -2,
     },
 });

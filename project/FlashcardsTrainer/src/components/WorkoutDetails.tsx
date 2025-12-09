@@ -57,7 +57,6 @@ export default function WorkoutDetails({ _id, title, exercises }: Props) {
 
     const count = logs.length;
 
-    // Latest performedAt (if any)
     let lastPerformedDisplay = "Never completed";
     if (count > 0) {
         const latest = logs.reduce((latestSoFar, log) => {

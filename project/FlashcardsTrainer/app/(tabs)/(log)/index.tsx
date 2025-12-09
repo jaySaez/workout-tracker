@@ -1,36 +1,40 @@
-import { FlatList, View, Text } from "react-native";
-import CardRow from "../../../src/components/CardRow";
+import { FlatList, View, Text, Pressable, StyleSheet } from "react-native";
 import { useState, useCallback } from "react";
-import { useFocusEffect } from "expo-router";
-import { CardItem } from "../../../src/components/types";
+import { Link, useFocusEffect } from "expo-router";
+import { WorkoutLog } from "../../../src/components/types";
+import LogCard from "../../../src/components/LogCard"
 import { BASE_URL } from "../../../src/config";
 
 
 
 export default function Home() {
-    const [starredCards, setStarredCards] = useState<CardItem[]>([]);
+    const [logs, setLogs] = useState<WorkoutLog[]>([]);
 
     useFocusEffect(useCallback(() => {
-        async function fetchFavorites() {
+        async function fetchWorkoutLogs() {
             try {
-                const res = await fetch(`${BASE_URL}/api/cards/favorites`);
+                const res = await fetch(`${BASE_URL}/api/workoutLogs`);
                 if (!res.ok) {
-                    throw new Error(`Failed to load favorites: ${res.status}`);
+                    throw new Error(`Failed to load workout log: ${res.status}`);
                 }
                 const data = await res.json();
-                setStarredCards(data);
+                data.sort((a: { performedAt: string | number | Date; }, b: { performedAt: string | number | Date; }) =>
+                    new Date(b.performedAt).getTime() -
+                    new Date(a.performedAt).getTime()
+                );
+                setLogs(data);
             } catch (err) {
                 console.error(err);
             }
         }
 
-        fetchFavorites();
+        fetchWorkoutLogs();
     }, []));
 
-    if (starredCards.length == 0) {
+    if (logs.length == 0) {
         return (
             <View style={{ justifyContent: "center", alignItems: "center", flex: 1 }}>
-                <Text style={{ fontSize: 18 }}>No favorites!</Text>
+                <Text style={{ fontSize: 18 }}>No workouts logged!</Text>
             </View>
         );
     }
@@ -40,19 +44,41 @@ export default function Home() {
             <View>
                 <FlatList
                     style={{ marginTop: 8 }}
-                    data={starredCards}
+                    data={logs}
                     keyExtractor={(c) => c._id}
                     renderItem={({ item }) => (
-                        <CardRow
+                        <LogCard
                             _id={item._id}
-                            question={item.question}
-                            answer={item.answer}
-                            isFavorite={item.isFavorite}
-                            deckId={item.deckId} />
+                            workoutId={item.workoutId}
+                            performedAt={item.performedAt}
+                            notes={item.notes}
+                        />
                     )}
                     contentContainerStyle={{ paddingBottom: 24 }}
                 />
+                <Link href="/(modals)/log-workout" asChild>
+                    <Pressable style={styles.add}>
+                        <Text style={{ color: "white", fontWeight: 600, fontSize: 20 }}>+</Text>
+                    </Pressable>
+                </Link>
             </View>
         </>
     );
 }
+
+const styles = StyleSheet.create({
+    add: {
+        position: "absolute",
+        bottom: 30,
+        right: 20,
+        width: 80,
+        height: 80,
+        alignItems: "center",
+        justifyContent: "center",
+        borderWidth: 1,
+        borderRadius: "50%",
+        borderColor: "#f6f6f6",
+        backgroundColor: "black",
+        fontSize: 16
+    }
+});
