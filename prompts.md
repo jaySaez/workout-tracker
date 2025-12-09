@@ -6,7 +6,7 @@ how do i delete all mongodb items with a specific parameter value?
 ---
 
 ### Prompt 2:
->"Replace me with a propt"
+I want to theme my application to make it dark mode with green accents. Can you do that for me?
 
 ---
 

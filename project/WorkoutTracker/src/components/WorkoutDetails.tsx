@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
 import { Workout } from "./types";
 import { BASE_URL } from "../config";
+import { theme } from "../theme";
 
 type WorkoutLog = {
     _id: string;
@@ -77,7 +78,7 @@ export default function WorkoutDetails({ _id, title, exercises }: Props) {
             <View style={styles.divider} />
 
             {loading ? (
-                <ActivityIndicator />
+                <ActivityIndicator color={theme.colors.primary} />
             ) : error ? (
                 <Text style={styles.error}>{error}</Text>
             ) : (
@@ -97,10 +98,10 @@ export default function WorkoutDetails({ _id, title, exercises }: Props) {
 
 const styles = StyleSheet.create({
     card: {
-        backgroundColor: "#ffffff",
+        backgroundColor: theme.colors.surface,
         width: "90%",
-        borderRadius: 16,
-        borderColor: "#f6f6f6",
+        borderRadius: theme.borderRadius.lg,
+        borderColor: theme.colors.border,
         borderWidth: 1,
         paddingVertical: 14,
         paddingHorizontal: 16,
@@ -110,17 +111,17 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 18,
         fontWeight: "700",
-        color: "#202020",
+        color: theme.colors.text,
         marginBottom: 8,
     },
     exercises: {
         fontSize: 16,
-        color: "#202020",
+        color: theme.colors.textSecondary,
         marginTop: 4,
     },
     divider: {
         height: 1,
-        backgroundColor: "#f0f0f0",
+        backgroundColor: theme.colors.border,
         marginVertical: 10,
     },
     statsRow: {
@@ -128,14 +129,14 @@ const styles = StyleSheet.create({
     },
     statText: {
         fontSize: 14,
-        color: "#505050",
+        color: theme.colors.textSecondary,
     },
     statValue: {
         fontWeight: "600",
-        color: "#202020",
+        color: theme.colors.primary,
     },
     error: {
-        color: "red",
+        color: theme.colors.error,
         fontSize: 14,
     },
 });

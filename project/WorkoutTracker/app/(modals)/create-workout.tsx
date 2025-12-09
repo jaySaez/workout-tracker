@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { View, TextInput, StyleSheet, Pressable, Text } from "react-native";
 import { router } from "expo-router";
 import { BASE_URL } from "../../src/config";
+import { theme } from "../../src/theme";
 
 export default function CreateWorkout() {
     const [title, setTitle] = useState("");
@@ -35,65 +36,78 @@ export default function CreateWorkout() {
     };
 
     return (
-        <View>
+        <View style={styles.container}>
             <TextInput
                 value={title}
                 onChangeText={setTitle}
                 placeholder="Workout name"
+                placeholderTextColor={theme.colors.textTertiary}
                 style={styles.qbox}
             />
             <TextInput
                 value={exercises}
                 onChangeText={setExercises}
                 placeholder={"Exercises e.g. \n- Curls 3x12\n- Squats 4x6"}
+                placeholderTextColor={theme.colors.textTertiary}
                 style={styles.abox}
                 multiline
                 textAlignVertical="top"
             />
             <Pressable style={styles.save} onPress={handleAdd}>
-                <Text style={{ color: "white" }}>Save</Text>
+                <Text style={styles.saveText}>Save</Text>
             </Pressable>
         </View>
     );
 }
 
 const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: theme.colors.background,
+    },
     qbox: {
         flexDirection: "row",
         alignItems: "center",
         borderWidth: 1,
-        borderRadius: 15,
-        borderColor: "#f6f6f6",
-        backgroundColor: "#ffffff",
+        borderRadius: theme.borderRadius.md,
+        borderColor: theme.colors.border,
+        backgroundColor: theme.colors.surface,
         paddingHorizontal: 16,
         paddingVertical: 16,
         marginHorizontal: 16,
         marginVertical: 10,
         fontSize: 16,
+        fontWeight: "600",
+        color: theme.colors.text,
     },
     abox: {
         flexDirection: "row",
         alignItems: "flex-start",
         borderWidth: 1,
-        borderRadius: 15,
-        borderColor: "#f6f6f6",
-        backgroundColor: "#ffffff",
+        borderRadius: theme.borderRadius.md,
+        borderColor: theme.colors.border,
+        backgroundColor: theme.colors.surface,
         paddingHorizontal: 16,
         paddingVertical: 16,
         marginHorizontal: 16,
         marginBottom: 10,
         fontSize: 16,
         minHeight: 120,
+        color: theme.colors.text,
     },
     save: {
         alignItems: "center",
         borderWidth: 1,
-        borderRadius: 15,
-        borderColor: "#f6f6f6",
-        backgroundColor: "black",
+        borderRadius: theme.borderRadius.md,
+        borderColor: theme.colors.primary,
+        backgroundColor: theme.colors.primary,
         paddingHorizontal: 16,
         paddingVertical: 16,
         marginHorizontal: 16,
         fontSize: 16,
+    },
+    saveText: {
+        color: theme.colors.text,
+        fontWeight: "600",
     },
 });

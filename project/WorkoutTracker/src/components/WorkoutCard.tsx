@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Pressable, Alert } from "react-native";
 import { Link } from "expo-router";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { BASE_URL } from "../config";
+import { theme } from "../theme";
 
 type Props = {
     id: string;
@@ -78,7 +79,7 @@ export default function WorkoutCard({ id, title, isFavorite, onDeleted }: Props)
                 <FontAwesome
                     name={favorite ? "star" : "star-o"}
                     size={22}
-                    color={"black"}
+                    color={favorite ? theme.colors.primary : theme.colors.iconSecondary}
                 />
             </Pressable>
         </View>
@@ -90,10 +91,10 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "space-between",
-        backgroundColor: "#ffffff",
+        backgroundColor: theme.colors.surface,
         width: "90%",
-        borderRadius: 16,
-        borderColor: "#f6f6f6",
+        borderRadius: theme.borderRadius.lg,
+        borderColor: theme.colors.border,
         borderWidth: 1,
         paddingVertical: 14,
         paddingHorizontal: 16,
@@ -108,11 +109,11 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 17,
         fontWeight: "700",
-        color: "#202020",
+        color: theme.colors.text,
     },
     subtitle: {
         fontSize: 13,
-        color: "#202020",
+        color: theme.colors.textSecondary,
     },
     starButton: {
         marginLeft: 12,

@@ -5,6 +5,7 @@ import { BASE_URL } from "../../src/config";
 import { scheduleWorkoutReminder } from "../../src/notifications";
 import { Workout } from "../../src/components/types";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
+import { theme } from "../../src/theme";
 
 export default function CreateWorkoutLog() {
     const [workouts, setWorkouts] = useState<Workout[]>([]);
@@ -65,7 +66,7 @@ export default function CreateWorkoutLog() {
     };
 
     return (
-        <View>
+        <View style={styles.container}>
             <Text style={styles.label}>Select workout:</Text>
 
             <ScrollView
@@ -88,7 +89,7 @@ export default function CreateWorkoutLog() {
                                     <FontAwesome
                                         name="star"
                                         size={16}
-                                        color="black"
+                                        color={theme.colors.primary}
                                         style={{ marginRight: 8 }}
                                     />
                                 )}
@@ -108,7 +109,7 @@ export default function CreateWorkoutLog() {
 
                 {workouts.length === 0 && (
                     <View style={{ paddingVertical: 8 }}>
-                        <Text style={{ color: "#808080" }}>
+                        <Text style={{ color: theme.colors.textTertiary }}>
                             No workouts found.
                         </Text>
                     </View>
@@ -120,6 +121,7 @@ export default function CreateWorkoutLog() {
                 value={notes}
                 onChangeText={setNotes}
                 placeholder="How did your workout feel? Any comments?"
+                placeholderTextColor={theme.colors.textTertiary}
                 style={styles.notesBox}
                 multiline
                 textAlignVertical="top"
@@ -130,26 +132,30 @@ export default function CreateWorkoutLog() {
                 onPress={handleAdd}
                 disabled={!selectedWorkoutId}
             >
-                <Text style={{ color: "white" }}>Log workout</Text>
+                <Text style={styles.saveText}>Log workout</Text>
             </Pressable>
         </View>
     );
 }
 
 const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: theme.colors.background,
+    },
     label: {
         marginHorizontal: 16,
         marginTop: 12,
         marginBottom: 4,
         fontSize: 14,
         fontWeight: "500",
-        color: "#404040",
+        color: theme.colors.textSecondary,
     },
     dropdown: {
         borderWidth: 1,
-        borderRadius: 15,
-        borderColor: "#f6f6f6",
-        backgroundColor: "#ffffff",
+        borderRadius: theme.borderRadius.md,
+        borderColor: theme.colors.border,
+        backgroundColor: theme.colors.surface,
         marginHorizontal: 16,
         maxHeight: 220,
     },
@@ -157,42 +163,50 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         paddingVertical: 10,
         borderBottomWidth: 1,
-        borderBottomColor: "#f6f6f6",
+        borderBottomColor: theme.colors.border,
     },
     optionSelected: {
-        backgroundColor: "#f0f0f0",
+        backgroundColor: theme.colors.surfaceElevated,
+        borderLeftWidth: 3,
+        borderLeftColor: theme.colors.primary,
     },
     optionText: {
         fontSize: 16,
-        color: "#202020",
+        color: theme.colors.text,
     },
     optionTextSelected: {
         fontWeight: "600",
+        color: theme.colors.primary,
     },
     notesBox: {
         flexDirection: "row",
         alignItems: "flex-start",
         borderWidth: 1,
-        borderRadius: 15,
-        borderColor: "#f6f6f6",
-        backgroundColor: "#ffffff",
+        borderRadius: theme.borderRadius.md,
+        borderColor: theme.colors.border,
+        backgroundColor: theme.colors.surface,
         paddingHorizontal: 16,
         paddingVertical: 16,
         marginHorizontal: 16,
         marginVertical: 10,
         fontSize: 16,
         minHeight: 120,
+        color: theme.colors.text,
     },
     save: {
         alignItems: "center",
         borderWidth: 1,
-        borderRadius: 15,
-        borderColor: "#f6f6f6",
-        backgroundColor: "black",
+        borderRadius: theme.borderRadius.md,
+        borderColor: theme.colors.primary,
+        backgroundColor: theme.colors.primary,
         paddingHorizontal: 16,
         paddingVertical: 16,
         marginHorizontal: 16,
         fontSize: 16,
         marginBottom: 10,
+    },
+    saveText: {
+        color: theme.colors.text,
+        fontWeight: "600",
     },
 });

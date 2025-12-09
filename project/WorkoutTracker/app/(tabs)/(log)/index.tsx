@@ -4,6 +4,7 @@ import { Link, useFocusEffect } from "expo-router";
 import { WorkoutLog } from "../../../src/components/types";
 import LogCard from "../../../src/components/LogCard"
 import { BASE_URL } from "../../../src/config";
+import { theme } from "../../../src/theme";
 
 
 
@@ -34,11 +35,11 @@ export default function Home() {
 
     if (logs.length == 0) {
         return (
-            <View style={{ justifyContent: "center", alignItems: "center", flex: 1 }}>
-                <Text style={{ fontSize: 18 }}>No workouts logged!</Text>
+            <View style={styles.emptyContainer}>
+                <Text style={styles.emptyText}>No workouts logged!</Text>
                 <Link href="/(modals)/log-workout" asChild>
                     <Pressable style={styles.add}>
-                        <Text style={{ color: "white", fontWeight: 600, fontSize: 20 }}>+</Text>
+                        <Text style={styles.addText}>+</Text>
                     </Pressable>
                 </Link>
             </View>
@@ -47,7 +48,7 @@ export default function Home() {
 
     return (
         <>
-            <View>
+            <View style={styles.container}>
                 <FlatList
                     style={{ marginTop: 8 }}
                     data={logs}
@@ -66,11 +67,30 @@ export default function Home() {
                     contentContainerStyle={{ paddingBottom: 24 }}
                 />
             </View>
+            <Link href="/(modals)/log-workout" asChild>
+                <Pressable style={styles.add}>
+                    <Text style={styles.addText}>+</Text>
+                </Pressable>
+            </Link>
         </>
     );
 }
 
 const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: theme.colors.background,
+    },
+    emptyContainer: {
+        justifyContent: "center",
+        alignItems: "center",
+        flex: 1,
+        backgroundColor: theme.colors.background,
+    },
+    emptyText: {
+        fontSize: 18,
+        color: theme.colors.text,
+    },
     add: {
         position: "absolute",
         bottom: 30,
@@ -80,9 +100,14 @@ const styles = StyleSheet.create({
         alignItems: "center",
         justifyContent: "center",
         borderWidth: 1,
-        borderRadius: "50%",
-        borderColor: "#f6f6f6",
-        backgroundColor: "black",
+        borderRadius: 40,
+        borderColor: theme.colors.primary,
+        backgroundColor: theme.colors.primary,
         fontSize: 16
+    },
+    addText: {
+        color: theme.colors.text,
+        fontWeight: "600",
+        fontSize: 20
     }
 });

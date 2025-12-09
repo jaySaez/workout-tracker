@@ -4,6 +4,7 @@ import WorkoutDetails from "../../../../src/components/WorkoutDetails";
 import { useState, useCallback } from "react";
 import { BASE_URL } from "../../../../src/config";
 import { WorkoutLog, Workout } from "../../../../src/components/types";
+import { theme } from "../../../../src/theme";
 
 export default function WorkoutDetailPage() {
     const { id } = useLocalSearchParams<{ id: string }>();
@@ -71,7 +72,7 @@ export default function WorkoutDetailPage() {
     }
 
     return (
-        <View style={{ flex: 1 }}>
+        <View style={styles.container}>
             {workout ? (
                 <>
                     <View style={{ marginTop: 8, alignItems: "center" }}>
@@ -89,11 +90,11 @@ export default function WorkoutDetailPage() {
                 </>
             ) : loading ? (
                 <View style={{ marginTop: 20 }}>
-                    <ActivityIndicator />
+                    <ActivityIndicator color={theme.colors.primary} />
                 </View>
             ) : (
                 <View style={{ marginTop: 20, alignItems: "center" }}>
-                    <Text>Workout not found.</Text>
+                    <Text style={styles.errorText}>Workout not found.</Text>
                 </View>
             )}
 
@@ -119,10 +120,14 @@ export default function WorkoutDetailPage() {
 }
 
 const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: theme.colors.background,
+    },
     statsTitle: {
         fontSize: 20,
         fontWeight: "700",
-        color: "#202020",
+        color: theme.colors.text,
         paddingVertical: 10,
         paddingBottom: 0,
         paddingHorizontal: 10,
@@ -130,13 +135,13 @@ const styles = StyleSheet.create({
     },
     statsValue: {
         fontWeight: "600",
-        color: "#202020",
+        color: theme.colors.primary,
     },
     logRow: {
-        backgroundColor: "#ffffff",
+        backgroundColor: theme.colors.surface,
         width: "90%",
-        borderRadius: 12,
-        borderColor: "#f6f6f6",
+        borderRadius: theme.borderRadius.md,
+        borderColor: theme.colors.border,
         borderWidth: 1,
         paddingVertical: 10,
         paddingHorizontal: 14,
@@ -146,11 +151,14 @@ const styles = StyleSheet.create({
     logDate: {
         fontSize: 14,
         fontWeight: "600",
-        color: "#202020",
+        color: theme.colors.text,
     },
     logNotes: {
         fontSize: 14,
-        color: "#404040",
+        color: theme.colors.textSecondary,
         marginTop: 4,
+    },
+    errorText: {
+        color: theme.colors.text,
     },
 });

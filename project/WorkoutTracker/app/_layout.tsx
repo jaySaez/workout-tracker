@@ -2,6 +2,7 @@ import { Stack } from "expo-router";
 import * as Notifications from "expo-notifications";
 import { useEffect } from "react";
 import { Platform } from "react-native";
+import { theme } from "../src/theme";
 
 Notifications.setNotificationHandler({
     handleNotification: async () => ({
@@ -30,7 +31,20 @@ export default function RootLayout() {
         requestPermissions();
     }, []);
     return (
-        <Stack>
+        <Stack
+            screenOptions={{
+                headerStyle: {
+                    backgroundColor: theme.colors.surface,
+                },
+                headerTintColor: theme.colors.text,
+                headerTitleStyle: {
+                    color: theme.colors.text,
+                },
+                contentStyle: {
+                    backgroundColor: theme.colors.background,
+                },
+            }}
+        >
             <Stack.Screen name="(tabs)" options={{ title: "Home", headerShown: false }} />
             <Stack.Screen
                 name="(modals)/create-workout"

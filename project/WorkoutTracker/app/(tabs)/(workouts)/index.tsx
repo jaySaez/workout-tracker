@@ -4,6 +4,7 @@ import { Link, useFocusEffect } from 'expo-router';
 import SearchBar from '../../../src/components/SearchBar';
 import WorkoutCard from "../../../src/components/WorkoutCard";
 import { BASE_URL } from "../../../src/config";
+import { theme } from "../../../src/theme";
 
 import { Workout } from "../../../src/components/types";
 
@@ -38,7 +39,7 @@ export default function Home() {
 
     return (
         <>
-            <View>
+            <View style={styles.container}>
                 <SearchBar value={query} onChangeText={setQuery} />
                 <FlatList
                     data={filtered}
@@ -57,7 +58,7 @@ export default function Home() {
                 />
                 <Link href="/(modals)/create-workout" asChild>
                     <Pressable style={styles.add}>
-                        <Text style={{ color: "white", fontWeight: 600, fontSize: 20 }}>+</Text>
+                        <Text style={styles.addText}>Create New Workout</Text>
                     </Pressable>
                 </Link>
             </View>
@@ -66,18 +67,27 @@ export default function Home() {
 }
 
 const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: theme.colors.background,
+    },
     add: {
         position: "absolute",
-        bottom: 30,
-        right: 20,
-        width: 80,
-        height: 80,
+        bottom: 25,
+        left: "5%",
+        width: "90%",
+        height: 60,
         alignItems: "center",
         justifyContent: "center",
+        borderRadius: theme.borderRadius.md,
+        borderColor: theme.colors.primary,
         borderWidth: 1,
-        borderRadius: "50%",
-        borderColor: "#f6f6f6",
-        backgroundColor: "black",
+        backgroundColor: theme.colors.primary,
         fontSize: 16
+    },
+    addText: {
+        color: theme.colors.text,
+        fontWeight: "600",
+        fontSize: 20
     }
 });

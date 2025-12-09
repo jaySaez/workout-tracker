@@ -1,6 +1,7 @@
 import React from "react";
 import { View, TextInput, StyleSheet } from "react-native";
 import Entypo from '@expo/vector-icons/Entypo';
+import { theme } from "../theme";
 
 
 export default function SearchBar({
@@ -12,11 +13,12 @@ export default function SearchBar({
 }) {
     return (
         <View style={styles.box}>
-            <Entypo name="magnifying-glass" size={24} color="black" />
+            <Entypo name="magnifying-glass" size={24} color={theme.colors.primary} />
             <TextInput
                 value={value}
                 onChangeText={onChangeText}
                 placeholder={placeholder}
+                placeholderTextColor={theme.colors.textTertiary}
                 style={styles.input}
             />
         </View>
@@ -27,16 +29,21 @@ const styles = StyleSheet.create({
     box: {
         flexDirection: "row",
         alignItems: "center",
-        backgroundColor: "#f1f1f1",
+        backgroundColor: theme.colors.surface,
+        borderColor: theme.colors.border,
+        borderWidth: 1,
+        borderRadius: theme.borderRadius.md,
         paddingHorizontal: 10,
         paddingVertical: 10,
         marginHorizontal: 16,
-        marginTop: 4
+        marginTop: 8,
+        marginBottom: 4
     },
     input: {
         flex: 1,
         fontSize: 16,
         padding: 8,
-        marginLeft: 8
+        marginLeft: 8,
+        color: theme.colors.text
     }
 });

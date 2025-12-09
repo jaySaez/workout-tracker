@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, Pressable } from "react-native";
 import { BASE_URL } from "../config";
 import { WorkoutLog, Workout } from "./types";
+import { theme } from "../theme";
 
 type Props = WorkoutLog & {
     onDeleted?: (id: string) => void;
@@ -90,10 +91,10 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "space-between",
-        backgroundColor: "#ffffff",
+        backgroundColor: theme.colors.surface,
         width: "90%",
-        borderRadius: 16,
-        borderColor: "#f6f6f6",
+        borderRadius: theme.borderRadius.lg,
+        borderColor: theme.colors.border,
         borderWidth: 1,
         paddingVertical: 14,
         paddingHorizontal: 16,
@@ -108,20 +109,20 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 17,
         fontWeight: "700",
-        color: "#202020",
+        color: theme.colors.text,
     },
     subtitle: {
         fontSize: 13,
-        color: "#505050",
+        color: theme.colors.textSecondary,
     },
     notes: {
         fontSize: 14,
-        color: "#202020",
+        color: theme.colors.textSecondary,
         marginTop: 4,
     },
     error: {
         fontSize: 12,
-        color: "red",
+        color: theme.colors.error,
         marginTop: 4,
     },
 });
