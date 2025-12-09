@@ -17,10 +17,11 @@ export default function Home() {
                 if (!res.ok) {
                     throw new Error(`Failed to load workout log: ${res.status}`);
                 }
-                const data = await res.json();
-                data.sort((a: { performedAt: string | number | Date; }, b: { performedAt: string | number | Date; }) =>
-                    new Date(b.performedAt).getTime() -
-                    new Date(a.performedAt).getTime()
+                const data: WorkoutLog[] = await res.json();
+                data.sort(
+                    (a, b) =>
+                        new Date(b.performedAt).getTime() -
+                        new Date(a.performedAt).getTime()
                 );
                 setLogs(data);
             } catch (err) {
@@ -35,6 +36,11 @@ export default function Home() {
         return (
             <View style={{ justifyContent: "center", alignItems: "center", flex: 1 }}>
                 <Text style={{ fontSize: 18 }}>No workouts logged!</Text>
+                <Link href="/(modals)/log-workout" asChild>
+                    <Pressable style={styles.add}>
+                        <Text style={{ color: "white", fontWeight: 600, fontSize: 20 }}>+</Text>
+                    </Pressable>
+                </Link>
             </View>
         );
     }
@@ -56,11 +62,6 @@ export default function Home() {
                     )}
                     contentContainerStyle={{ paddingBottom: 24 }}
                 />
-                <Link href="/(modals)/log-workout" asChild>
-                    <Pressable style={styles.add}>
-                        <Text style={{ color: "white", fontWeight: 600, fontSize: 20 }}>+</Text>
-                    </Pressable>
-                </Link>
             </View>
         </>
     );

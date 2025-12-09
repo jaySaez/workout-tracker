@@ -1,4 +1,5 @@
 import { Workout } from '../models/Workout.js';
+import { WorkoutLog } from '../models/WorkoutLog.js';
 
 
 export const getWorkouts = async (req, res) => {
@@ -34,9 +35,7 @@ export const deleteWorkout = async (req, res) => {
         if (!deleted) {
             return res.status(404).json({ error: 'Workout not found' });
         }
-
         await WorkoutLog.deleteMany({ workoutId: req.params.workoutId });
-
         res.json({ message: 'Workout deleted successfully' });
     } catch (err) {
         res.status(400).json({ error: err.message });
