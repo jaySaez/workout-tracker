@@ -59,6 +59,6 @@ Record your app running on a **real phone** and upload it to **Google Drive**.
 
 | # | Description | Link |
 |---|--------------|------|
-| 1 | **Installable Android Build** | [Paste your EAS build link here](https://expo.dev/artifacts/eas/...) |
-| 2 | **Backend URL** | [Paste your backend base URL here](https://your-app-name.onrender.com/) |
+| 1 | **Installable Android Build** | [https://expo.dev/artifacts/eas/wi93f5ns2E3KJUnxvnzEM6.apk](https://expo.dev/artifacts/eas/...) |
+| 2 | **Backend URL** | [https://final-project-jaysaez-1.onrender.com](https://your-app-name.onrender.com/) |
 | 3 | **Demo Video (Google Drive)** | [Paste your video link here](https://drive.google.com/...) |
