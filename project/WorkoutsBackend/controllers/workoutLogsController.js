@@ -8,7 +8,7 @@ export const getWorkoutLogs = async (req, res) => {
 
 export const getWorkoutLogsById = async (req, res) => {
     try {
-        const workoutLogs = await WorkoutLog.find({ workoutId: req.params.workoutId })
+        const workoutLogs = await WorkoutLog.find({ workoutId: req.params.id })
         if (!workoutLogs) {
             return res.status(404).json({ error: 'Logs not found' });
         }
