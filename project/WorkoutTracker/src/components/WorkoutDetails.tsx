@@ -27,7 +27,7 @@ export default function WorkoutDetails({ _id, title, exercises }: Props) {
                 setError(null);
 
                 const res = await fetch(
-                    `${BASE_URL}/api/workoutLogs?workoutId=${_id}`
+                    `${BASE_URL}/api/workoutLogs/${_id}`
                 );
 
                 if (!res.ok) {
