@@ -38,6 +38,7 @@ export default function CreateWorkout() {
     return (
         <View style={styles.container}>
             <TextInput
+                keyboardAppearance="dark"
                 value={title}
                 onChangeText={setTitle}
                 placeholder="Workout name"
@@ -45,6 +46,7 @@ export default function CreateWorkout() {
                 style={styles.qbox}
             />
             <TextInput
+                keyboardAppearance="dark"
                 value={exercises}
                 onChangeText={setExercises}
                 placeholder={"Exercises e.g. \n- Curls 3x12\n- Squats 4x6"}

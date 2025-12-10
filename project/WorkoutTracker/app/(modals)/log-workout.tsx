@@ -118,6 +118,7 @@ export default function CreateWorkoutLog() {
 
             <Text style={styles.label}>Notes (optional):</Text>
             <TextInput
+                keyboardAppearance="dark"
                 value={notes}
                 onChangeText={setNotes}
                 placeholder="How did your workout feel? Any comments?"
@@ -157,7 +158,7 @@ const styles = StyleSheet.create({
         borderColor: theme.colors.border,
         backgroundColor: theme.colors.surface,
         marginHorizontal: 16,
-        maxHeight: 220,
+        maxHeight: 190,
     },
     option: {
         paddingHorizontal: 16,

@@ -15,6 +15,7 @@ export default function SearchBar({
         <View style={styles.box}>
             <Entypo name="magnifying-glass" size={24} color={theme.colors.primary} />
             <TextInput
+                keyboardAppearance="dark"
                 value={value}
                 onChangeText={onChangeText}
                 placeholder={placeholder}
