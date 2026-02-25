@@ -1,16 +1,38 @@
-import React, { useState } from "react";
-import { View, TextInput, StyleSheet, Pressable, Text, FlatList, KeyboardAvoidingView, Platform } from "react-native";
-import { router } from "expo-router";
+import React, { useState, useEffect } from "react";
+import { View, TextInput, StyleSheet, Pressable, Text, FlatList, KeyboardAvoidingView, Platform, ActivityIndicator } from "react-native";
+import { router, useLocalSearchParams } from "expo-router";
 import { BASE_URL } from "../../src/config";
 import { theme } from "../../src/theme";
+import { Workout, WorkoutExercise } from "../../src/components/types";
 
 type ExerciseInput = { name: string; sets: string };
 
-export default function CreateWorkout() {
+export default function EditWorkout() {
+    const { id } = useLocalSearchParams<{ id: string }>();
+    const [loading, setLoading] = useState(true);
     const [title, setTitle] = useState("");
+    const [existingExercises, setExistingExercises] = useState<WorkoutExercise[]>([]);
     const [exercises, setExercises] = useState<ExerciseInput[]>([]);
     const [exerciseName, setExerciseName] = useState("");
     const [exerciseSets, setExerciseSets] = useState("");
+
+    useEffect(() => {
+        if (!id) return;
+        async function fetchWorkout() {
+            try {
+                const res = await fetch(`${BASE_URL}/api/workouts/${id}`);
+                if (!res.ok) throw new Error("Failed to load workout");
+                const data: Workout = await res.json();
+                setTitle(data.title);
+                setExistingExercises(data.exercises);
+            } catch (err) {
+                console.error(err);
+            } finally {
+                setLoading(false);
+            }
+        }
+        fetchWorkout();
+    }, [id]);
 
     const addExercise = () => {
         const name = exerciseName.trim();
@@ -22,29 +44,41 @@ export default function CreateWorkout() {
         setExerciseSets("");
     };
 
-    const removeExercise = (index: number) => {
+    const removeNewExercise = (index: number) => {
         setExercises((prev) => prev.filter((_, i) => i !== index));
     };
 
+    const removeExistingExercise = (index: number) => {
+        setExistingExercises((prev) => prev.filter((_, i) => i !== index));
+    };
+
     const handleSave = async () => {
-        const t = title.trim();
-        if (!t || exercises.length === 0) return;
+        if (!id) return;
+        const allExercises = [
+            ...existingExercises.map((e) => ({
+                name: e.name,
+                sets: e.sets,
+            })),
+            ...exercises.map((e) => ({
+                name: e.name,
+                sets: parseInt(e.sets, 10),
+            })),
+        ];
+
+        if (allExercises.length === 0) return;
 
         try {
-            const res = await fetch(`${BASE_URL}/api/workouts`, {
-                method: "POST",
+            const res = await fetch(`${BASE_URL}/api/workouts/${id}`, {
+                method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    title: t,
-                    exercises: exercises.map((e) => ({
-                        name: e.name,
-                        sets: parseInt(e.sets, 10),
-                    })),
+                    title: title.trim(),
+                    exercises: allExercises,
                 }),
             });
 
             if (!res.ok) {
-                throw new Error(`Failed to create workout: ${res.status}`);
+                throw new Error(`Failed to update workout: ${res.status}`);
             }
 
             router.dismiss();
@@ -52,6 +86,16 @@ export default function CreateWorkout() {
             console.error(err);
         }
     };
+
+    if (loading) {
+        return (
+            <View style={[styles.container, { justifyContent: "center", alignItems: "center" }]}>
+                <ActivityIndicator color={theme.colors.primary} />
+            </View>
+        );
+    }
+
+    const totalExercises = existingExercises.length + exercises.length;
 
     return (
         <KeyboardAvoidingView
@@ -66,6 +110,50 @@ export default function CreateWorkout() {
                 placeholderTextColor={theme.colors.textTertiary}
                 style={styles.titleInput}
             />
+
+            {existingExercises.length > 0 && (
+                <>
+                    <Text style={styles.sectionLabel}>Current Exercises</Text>
+                    <FlatList
+                        data={existingExercises}
+                        keyExtractor={(_, i) => `existing-${i}`}
+                        style={styles.list}
+                        scrollEnabled={false}
+                        renderItem={({ item, index }) => (
+                            <Pressable onLongPress={() => removeExistingExercise(index)} delayLongPress={500}>
+                                <View style={styles.exerciseRow}>
+                                    <Text style={styles.exerciseText}>{item.name}</Text>
+                                    <Text style={styles.exerciseDetail}>
+                                        {item.sets} sets
+                                    </Text>
+                                </View>
+                            </Pressable>
+                        )}
+                    />
+                </>
+            )}
+
+            {exercises.length > 0 && (
+                <>
+                    <Text style={styles.sectionLabel}>New Exercises</Text>
+                    <FlatList
+                        data={exercises}
+                        keyExtractor={(_, i) => `new-${i}`}
+                        style={styles.list}
+                        scrollEnabled={false}
+                        renderItem={({ item, index }) => (
+                            <Pressable onLongPress={() => removeNewExercise(index)} delayLongPress={500}>
+                                <View style={styles.exerciseRow}>
+                                    <Text style={styles.exerciseText}>{item.name}</Text>
+                                    <Text style={styles.exerciseDetail}>
+                                        {item.sets} sets
+                                    </Text>
+                                </View>
+                            </Pressable>
+                        )}
+                    />
+                </>
+            )}
 
             <Text style={styles.sectionLabel}>Add Exercise</Text>
             <TextInput
@@ -89,33 +177,10 @@ export default function CreateWorkout() {
                 <Text style={styles.addBtnText}>+ Add Exercise</Text>
             </Pressable>
 
-            {exercises.length > 0 && (
-                <>
-                    <Text style={styles.sectionLabel}>Exercises</Text>
-                    <FlatList
-                        data={exercises}
-                        keyExtractor={(_, i) => i.toString()}
-                        style={styles.list}
-                        renderItem={({ item, index }) => (
-                            <Pressable onLongPress={() => removeExercise(index)} delayLongPress={500}>
-                                <View style={styles.exerciseRow}>
-                                    <Text style={styles.exerciseText}>
-                                        {item.name}
-                                    </Text>
-                                    <Text style={styles.exerciseDetail}>
-                                        {item.sets} sets
-                                    </Text>
-                                </View>
-                            </Pressable>
-                        )}
-                    />
-                </>
-            )}
-
             <Pressable
-                style={[styles.save, (!title.trim() || exercises.length === 0) && { opacity: 0.5 }]}
+                style={[styles.save, (!title.trim() || totalExercises === 0) && { opacity: 0.5 }]}
                 onPress={handleSave}
-                disabled={!title.trim() || exercises.length === 0}
+                disabled={!title.trim() || totalExercises === 0}
             >
                 <Text style={styles.saveText}>Save</Text>
             </Pressable>
@@ -160,15 +225,6 @@ const styles = StyleSheet.create({
         marginVertical: 4,
         fontSize: 16,
         color: theme.colors.text,
-    },
-    row: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        paddingHorizontal: 8,
-    },
-    halfInput: {
-        flex: 1,
-        marginHorizontal: 8,
     },
     addBtn: {
         alignItems: "center",

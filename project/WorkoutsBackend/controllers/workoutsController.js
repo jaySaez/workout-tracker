@@ -56,6 +56,25 @@ export const toggleFavorite = async (req, res) => {
     }
 };
 
+export const updateWorkout = async (req, res) => {
+    try {
+        const workout = await Workout.findById(req.params.workoutId);
+        if (!workout) {
+            return res.status(404).json({ error: 'Workout not found' });
+        }
+        if (req.body.title) {
+            workout.title = req.body.title;
+        }
+        if (req.body.exercises) {
+            workout.exercises = req.body.exercises;
+        }
+        await workout.save();
+        res.json(workout);
+    } catch (err) {
+        res.status(400).json({ error: err.message });
+    }
+};
+
 export const getFavorites = async (req, res) => {
     try {
         const favs = await Workout.find({ isFavorite: true });

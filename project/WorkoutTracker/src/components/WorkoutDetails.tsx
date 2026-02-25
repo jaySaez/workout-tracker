@@ -68,7 +68,7 @@ export default function WorkoutDetails({ _id, title, exercises }: Props) {
 
             {exercises.map((ex, i) => (
                 <Text key={i} style={styles.exerciseText}>
-                    • {ex.name}  {ex.sets} × {ex.reps}
+                    • {ex.name}  {ex.sets} sets
                 </Text>
             ))}
 

@@ -74,7 +74,9 @@ export default function LogCard({ _id, workoutId, performedAt, notes, exercises,
                             <Text style={styles.exerciseName}>{ex.name}</Text>
                             {ex.sets.map((s, si) => (
                                 <Text key={si} style={styles.setText}>
-                                    Set {si + 1}: {s.reps} reps × {s.weight} lbs
+                                    {s.skipped
+                                        ? `Set ${si + 1}: X (skipped)`
+                                        : `Set ${si + 1}: ${s.reps} reps × ${s.weight} lbs`}
                                 </Text>
                             ))}
                         </View>
