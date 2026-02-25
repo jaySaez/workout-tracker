@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from "react";
 import { View, TextInput, StyleSheet, Pressable, Text, ScrollView, Alert } from "react-native";
 import { router } from "expo-router";
 import { BASE_URL } from "../../src/config";
-import { scheduleWorkoutReminder } from "../../src/notifications";
 import { Workout, WorkoutLog, LogExercise, LogSet } from "../../src/components/types";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { theme } from "../../src/theme";
@@ -344,7 +343,6 @@ export default function CreateWorkoutLog() {
                 throw new Error(`Failed to log workout: ${res.status}`);
             }
             await clearProgress();
-            await scheduleWorkoutReminder();
             router.dismiss();
         } catch (err) {
             console.error(err);
