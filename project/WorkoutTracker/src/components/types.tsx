@@ -4,7 +4,7 @@ export type CardItem = { _id: string, question: string, answer: string, isFavori
 export type WorkoutExercise = {
     name: string;
     sets: number;
-    reps: number;
+    reps?: number;
 };
 
 export type Workout = {
@@ -16,8 +16,9 @@ export type Workout = {
 };
 
 export type LogSet = {
-    reps: number;
-    weight: number;
+    reps?: number;
+    weight?: number;
+    skipped?: boolean;
 };
 
 export type LogExercise = {

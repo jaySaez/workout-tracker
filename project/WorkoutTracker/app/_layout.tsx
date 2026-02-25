@@ -58,6 +58,10 @@ export default function RootLayout() {
                     name="(modals)/log-workout"
                     options={{ presentation: "modal", title: "Log Workout" }}
                 />
+                <Stack.Screen
+                    name="(modals)/edit-workout"
+                    options={{ presentation: "modal", title: "Edit Workout" }}
+                />
             </Stack>
         </>
 

@@ -84,6 +84,14 @@ export default function WorkoutDetailPage() {
                             createdAt={workout.createdAt}
                         />
                     </View>
+                    <Link
+                        href={{ pathname: "/(modals)/edit-workout", params: { id: workout._id } }}
+                        asChild
+                    >
+                        <Pressable style={styles.editBtn}>
+                            <Text style={styles.editBtnText}>Edit Workout</Text>
+                        </Pressable>
+                    </Link>
                     <View>
                         <Text style={styles.statsTitle}>Workout History</Text>
                     </View>
@@ -112,7 +120,9 @@ export default function WorkoutDetailPage() {
                                 <Text style={styles.logExerciseName}>{ex.name}</Text>
                                 {ex.sets.map((s, si) => (
                                     <Text key={si} style={styles.logSetText}>
-                                        Set {si + 1}: {s.reps} reps × {s.weight} lbs
+                                        {s.skipped
+                                            ? `Set ${si + 1}: X (skipped)`
+                                            : `Set ${si + 1}: ${s.reps} reps × ${s.weight} lbs`}
                                     </Text>
                                 ))}
                             </View>
@@ -142,6 +152,21 @@ const styles = StyleSheet.create({
         paddingBottom: 0,
         paddingHorizontal: 10,
         marginHorizontal: "5%",
+    },
+    editBtn: {
+        alignItems: "center",
+        borderWidth: 1,
+        borderRadius: theme.borderRadius.md,
+        borderColor: theme.colors.primaryDark,
+        backgroundColor: theme.colors.surfaceElevated,
+        paddingVertical: 10,
+        marginHorizontal: "5%",
+        marginTop: 8,
+    },
+    editBtnText: {
+        color: theme.colors.primary,
+        fontWeight: "600",
+        fontSize: 15,
     },
     statsValue: {
         fontWeight: "600",

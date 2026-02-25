@@ -1,13 +1,23 @@
 import React, { useState, useEffect, useRef } from "react";
-import { View, TextInput, StyleSheet, Pressable, Text, ScrollView } from "react-native";
+import { View, TextInput, StyleSheet, Pressable, Text, ScrollView, Alert } from "react-native";
 import { router } from "expo-router";
 import { BASE_URL } from "../../src/config";
 import { scheduleWorkoutReminder } from "../../src/notifications";
-import { Workout, WorkoutLog, LogExercise } from "../../src/components/types";
+import { Workout, WorkoutLog, LogExercise, LogSet } from "../../src/components/types";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { theme } from "../../src/theme";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 type Phase = "select" | "logging" | "finished";
+
+const STORAGE_KEY = "IN_PROGRESS_WORKOUT";
+
+type InProgressState = {
+    selectedWorkoutId: string;
+    currentExerciseIdx: number;
+    currentSetIdx: number;
+    loggedExercises: LogExercise[];
+};
 
 function formatTime(seconds: number): string {
     const m = Math.floor(seconds / 60);
@@ -19,6 +29,7 @@ export default function CreateWorkoutLog() {
     const [workouts, setWorkouts] = useState<Workout[]>([]);
     const [selectedWorkoutId, setSelectedWorkoutId] = useState<string | null>(null);
     const [phase, setPhase] = useState<Phase>("select");
+    const [savedProgress, setSavedProgress] = useState<InProgressState | null>(null);
 
     // Logging state
     const [currentExerciseIdx, setCurrentExerciseIdx] = useState(0);
@@ -52,6 +63,18 @@ export default function CreateWorkoutLog() {
                 if (data.length > 0) {
                     setSelectedWorkoutId(data[0]._id);
                 }
+
+                // Check for saved in-progress workout
+                const saved = await AsyncStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    const parsed: InProgressState = JSON.parse(saved);
+                    // Verify the workout still exists
+                    if (data.find((w) => w._id === parsed.selectedWorkoutId)) {
+                        setSavedProgress(parsed);
+                    } else {
+                        await AsyncStorage.removeItem(STORAGE_KEY);
+                    }
+                }
             } catch (err) {
                 console.error(err);
             }
@@ -77,8 +100,60 @@ export default function CreateWorkoutLog() {
 
     const selectedWorkout = workouts.find((w) => w._id === selectedWorkoutId) ?? null;
 
+    const saveProgress = async (
+        workoutId: string,
+        exerciseIdx: number,
+        setIdx: number,
+        exercises: LogExercise[]
+    ) => {
+        const state: InProgressState = {
+            selectedWorkoutId: workoutId,
+            currentExerciseIdx: exerciseIdx,
+            currentSetIdx: setIdx,
+            loggedExercises: exercises,
+        };
+        await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    };
+
+    const clearProgress = async () => {
+        await AsyncStorage.removeItem(STORAGE_KEY);
+        setSavedProgress(null);
+    };
+
+    const handleResume = async () => {
+        if (!savedProgress) return;
+
+        const workout = workouts.find((w) => w._id === savedProgress.selectedWorkoutId);
+        if (!workout) return;
+
+        setSelectedWorkoutId(savedProgress.selectedWorkoutId);
+
+        // Fetch previous log
+        try {
+            const res = await fetch(`${BASE_URL}/api/workoutLogs/latest/${savedProgress.selectedWorkoutId}`);
+            if (res.ok) {
+                const data: WorkoutLog = await res.json();
+                setPreviousLog(data);
+            }
+        } catch (err) {
+            console.error(err);
+        }
+
+        setLoggedExercises(savedProgress.loggedExercises);
+        setCurrentExerciseIdx(savedProgress.currentExerciseIdx);
+        setCurrentSetIdx(savedProgress.currentSetIdx);
+        setRepsInput("");
+        setWeightInput("");
+        setStopwatchSeconds(0);
+        setStopwatchRunning(false);
+        setPhase("logging");
+    };
+
     const handleStart = async () => {
         if (!selectedWorkout) return;
+
+        // Clear any saved progress when starting fresh
+        await clearProgress();
 
         // Fetch previous log for placeholder values
         try {
@@ -108,13 +183,45 @@ export default function CreateWorkoutLog() {
         if (!previousLog || !previousLog.exercises) return "";
         const prevExercise = previousLog.exercises[exerciseIdx];
         if (!prevExercise || !prevExercise.sets[setIdx]) return "";
-        return String(prevExercise.sets[setIdx][field]);
+        const val = prevExercise.sets[setIdx][field];
+        return val != null ? String(val) : "";
+    };
+
+    const advanceToNext = (newLoggedExercises: LogExercise[], nextExerciseIdx: number, nextSetIdx: number) => {
+        if (!selectedWorkout) return;
+
+        const exercise = selectedWorkout.exercises[nextExerciseIdx];
+        if (!exercise) return;
+
+        const isLastSetOfExercise = nextSetIdx >= exercise.sets;
+        const isLastExercise = nextExerciseIdx + 1 >= selectedWorkout.exercises.length;
+
+        if (isLastSetOfExercise && isLastExercise) {
+            setStopwatchRunning(false);
+            clearProgress();
+            setPhase("finished");
+        } else if (isLastSetOfExercise) {
+            const newExIdx = nextExerciseIdx + 1;
+            setCurrentExerciseIdx(newExIdx);
+            setCurrentSetIdx(0);
+            setStopwatchSeconds(0);
+            setStopwatchRunning(true);
+            saveProgress(selectedWorkout._id, newExIdx, 0, newLoggedExercises);
+        } else {
+            setCurrentExerciseIdx(nextExerciseIdx);
+            setCurrentSetIdx(nextSetIdx);
+            setStopwatchSeconds(0);
+            setStopwatchRunning(true);
+            saveProgress(selectedWorkout._id, nextExerciseIdx, nextSetIdx, newLoggedExercises);
+        }
+
+        setRepsInput("");
+        setWeightInput("");
     };
 
     const handleLogSet = () => {
         if (!selectedWorkout) return;
 
-        const exercise = selectedWorkout.exercises[currentExerciseIdx];
         const repsPlaceholder = getPlaceholder(currentExerciseIdx, currentSetIdx, "reps");
         const weightPlaceholder = getPlaceholder(currentExerciseIdx, currentSetIdx, "weight");
 
@@ -123,41 +230,101 @@ export default function CreateWorkoutLog() {
 
         if (isNaN(reps) || isNaN(weight)) return;
 
-        // Add set to current exercise
+        const newSet: LogSet = { reps, weight, skipped: false };
+
+        let newLoggedExercises: LogExercise[];
         setLoggedExercises((prev) => {
             const updated = [...prev];
+            const existingSets = [...updated[currentExerciseIdx].sets];
+            if (currentSetIdx < existingSets.length) {
+                // Editing an existing set (went back)
+                existingSets[currentSetIdx] = newSet;
+            } else {
+                existingSets.push(newSet);
+            }
             updated[currentExerciseIdx] = {
                 ...updated[currentExerciseIdx],
-                sets: [...updated[currentExerciseIdx].sets, { reps, weight }],
+                sets: existingSets,
             };
+            newLoggedExercises = updated;
             return updated;
         });
 
-        // Determine next set/exercise
-        const isLastSetOfExercise = currentSetIdx + 1 >= exercise.sets;
-        const isLastExercise = currentExerciseIdx + 1 >= selectedWorkout.exercises.length;
+        // Use setTimeout to ensure state is updated before advancing
+        setTimeout(() => {
+            advanceToNext(newLoggedExercises!, currentExerciseIdx, currentSetIdx + 1);
+        }, 0);
+    };
 
-        if (isLastSetOfExercise && isLastExercise) {
-            // All done
-            setStopwatchRunning(false);
-            setPhase("finished");
-        } else if (isLastSetOfExercise) {
-            // Move to next exercise
-            setCurrentExerciseIdx((prev) => prev + 1);
-            setCurrentSetIdx(0);
-            // Restart stopwatch
-            setStopwatchSeconds(0);
-            setStopwatchRunning(true);
-        } else {
-            // Next set of same exercise
-            setCurrentSetIdx((prev) => prev + 1);
-            // Restart stopwatch
-            setStopwatchSeconds(0);
-            setStopwatchRunning(true);
+    const handleSkipSet = () => {
+        if (!selectedWorkout) return;
+
+        const newSet: LogSet = { reps: 0, weight: 0, skipped: true };
+
+        let newLoggedExercises: LogExercise[];
+        setLoggedExercises((prev) => {
+            const updated = [...prev];
+            const existingSets = [...updated[currentExerciseIdx].sets];
+            if (currentSetIdx < existingSets.length) {
+                existingSets[currentSetIdx] = newSet;
+            } else {
+                existingSets.push(newSet);
+            }
+            updated[currentExerciseIdx] = {
+                ...updated[currentExerciseIdx],
+                sets: existingSets,
+            };
+            newLoggedExercises = updated;
+            return updated;
+        });
+
+        setTimeout(() => {
+            advanceToNext(newLoggedExercises!, currentExerciseIdx, currentSetIdx + 1);
+        }, 0);
+    };
+
+    const handleGoBack = () => {
+        if (!selectedWorkout) return;
+
+        if (currentSetIdx > 0) {
+            // Go back to previous set of same exercise
+            const prevSetIdx = currentSetIdx - 1;
+            setCurrentSetIdx(prevSetIdx);
+            const prevSet = loggedExercises[currentExerciseIdx]?.sets[prevSetIdx];
+            if (prevSet && !prevSet.skipped) {
+                setRepsInput(prevSet.reps != null ? String(prevSet.reps) : "");
+                setWeightInput(prevSet.weight != null ? String(prevSet.weight) : "");
+            } else {
+                setRepsInput("");
+                setWeightInput("");
+            }
+        } else if (currentExerciseIdx > 0) {
+            // Go back to last set of previous exercise
+            const prevExIdx = currentExerciseIdx - 1;
+            const prevExercise = selectedWorkout.exercises[prevExIdx];
+            const prevSetIdx = prevExercise.sets - 1;
+            setCurrentExerciseIdx(prevExIdx);
+            setCurrentSetIdx(prevSetIdx);
+            const prevSet = loggedExercises[prevExIdx]?.sets[prevSetIdx];
+            if (prevSet && !prevSet.skipped) {
+                setRepsInput(prevSet.reps != null ? String(prevSet.reps) : "");
+                setWeightInput(prevSet.weight != null ? String(prevSet.weight) : "");
+            } else {
+                setRepsInput("");
+                setWeightInput("");
+            }
         }
 
-        setRepsInput("");
-        setWeightInput("");
+        setStopwatchRunning(false);
+        setStopwatchSeconds(0);
+    };
+
+    const handleExitWorkout = async () => {
+        if (!selectedWorkout) return;
+
+        await saveProgress(selectedWorkout._id, currentExerciseIdx, currentSetIdx, loggedExercises);
+        setStopwatchRunning(false);
+        router.dismiss();
     };
 
     const handleFinish = async () => {
@@ -176,6 +343,7 @@ export default function CreateWorkoutLog() {
             if (!res.ok) {
                 throw new Error(`Failed to log workout: ${res.status}`);
             }
+            await clearProgress();
             await scheduleWorkoutReminder();
             router.dismiss();
         } catch (err) {
@@ -183,10 +351,28 @@ export default function CreateWorkoutLog() {
         }
     };
 
+    const canGoBack = currentExerciseIdx > 0 || currentSetIdx > 0;
+
     // --- SELECT PHASE ---
     if (phase === "select") {
         return (
             <View style={styles.container}>
+                {savedProgress && (
+                    <View style={styles.resumeBanner}>
+                        <Text style={styles.resumeText}>
+                            You have an in-progress workout.
+                        </Text>
+                        <View style={styles.resumeActions}>
+                            <Pressable style={styles.resumeBtn} onPress={handleResume}>
+                                <Text style={styles.resumeBtnText}>Resume</Text>
+                            </Pressable>
+                            <Pressable style={styles.discardBtn} onPress={clearProgress}>
+                                <Text style={styles.discardBtnText}>Discard</Text>
+                            </Pressable>
+                        </View>
+                    </View>
+                )}
+
                 <Text style={styles.label}>Select workout:</Text>
 
                 <ScrollView
@@ -253,6 +439,13 @@ export default function CreateWorkoutLog() {
         const totalSetsAll = selectedWorkout.exercises.reduce((s, e) => s + e.sets, 0);
         const completedSets = loggedExercises.reduce((s, e) => s + e.sets.length, 0);
 
+        // Determine next exercise
+        const isLastSetOfExercise = currentSetIdx + 1 >= exercise.sets;
+        const isLastExercise = currentExerciseIdx + 1 >= selectedWorkout.exercises.length;
+        const nextExerciseName = (!isLastExercise && isLastSetOfExercise)
+            ? selectedWorkout.exercises[currentExerciseIdx + 1].name
+            : null;
+
         return (
             <View style={styles.container}>
                 <View style={styles.progressBar}>
@@ -264,6 +457,12 @@ export default function CreateWorkoutLog() {
                 <Text style={styles.setInfo}>
                     Set {currentSetIdx + 1} of {exercise.sets}
                 </Text>
+
+                {nextExerciseName && (
+                    <Text style={styles.nextExercise}>
+                        Next: {nextExerciseName}
+                    </Text>
+                )}
 
                 <View style={styles.inputRow}>
                     <View style={styles.inputGroup}>
@@ -296,6 +495,24 @@ export default function CreateWorkoutLog() {
                     <Text style={styles.logSetBtnText}>Log Set</Text>
                 </Pressable>
 
+                <View style={styles.actionRow}>
+                    <Pressable
+                        style={[styles.secondaryBtn, !canGoBack && { opacity: 0.3 }]}
+                        onPress={handleGoBack}
+                        disabled={!canGoBack}
+                    >
+                        <FontAwesome name="arrow-left" size={14} color={theme.colors.primary} />
+                        <Text style={styles.secondaryBtnText}>Back</Text>
+                    </Pressable>
+                    <Pressable style={styles.skipBtn} onPress={handleSkipSet}>
+                        <Text style={styles.skipBtnText}>Skip Set</Text>
+                    </Pressable>
+                    <Pressable style={styles.secondaryBtn} onPress={handleExitWorkout}>
+                        <FontAwesome name="sign-out" size={14} color={theme.colors.primary} />
+                        <Text style={styles.secondaryBtnText}>Exit</Text>
+                    </Pressable>
+                </View>
+
                 {stopwatchRunning && (
                     <View style={styles.stopwatchContainer}>
                         <FontAwesome name="clock-o" size={20} color={theme.colors.primary} />
@@ -310,7 +527,9 @@ export default function CreateWorkoutLog() {
                                 <Text style={styles.loggedExerciseName}>{ex.name}</Text>
                                 {ex.sets.map((s, si) => (
                                     <Text key={si} style={styles.loggedSetText}>
-                                        Set {si + 1}: {s.reps} reps × {s.weight} lbs
+                                        {s.skipped
+                                            ? `Set ${si + 1}: X (skipped)`
+                                            : `Set ${si + 1}: ${s.reps} reps × ${s.weight} lbs`}
                                     </Text>
                                 ))}
                             </View>
@@ -332,7 +551,9 @@ export default function CreateWorkoutLog() {
                         <Text style={styles.loggedExerciseName}>{ex.name}</Text>
                         {ex.sets.map((s, si) => (
                             <Text key={si} style={styles.loggedSetText}>
-                                Set {si + 1}: {s.reps} reps × {s.weight} lbs
+                                {s.skipped
+                                    ? `Set ${si + 1}: X (skipped)`
+                                    : `Set ${si + 1}: ${s.reps} reps × ${s.weight} lbs`}
                             </Text>
                         ))}
                     </View>
@@ -401,6 +622,48 @@ const styles = StyleSheet.create({
         fontWeight: "600",
         fontSize: 16,
     },
+    // --- Resume banner ---
+    resumeBanner: {
+        backgroundColor: theme.colors.surfaceElevated,
+        borderBottomWidth: 1,
+        borderBottomColor: theme.colors.border,
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+    },
+    resumeText: {
+        color: theme.colors.text,
+        fontSize: 15,
+        fontWeight: "600",
+        marginBottom: 8,
+    },
+    resumeActions: {
+        flexDirection: "row",
+        gap: 10,
+    },
+    resumeBtn: {
+        flex: 1,
+        alignItems: "center",
+        borderRadius: theme.borderRadius.sm,
+        backgroundColor: theme.colors.primary,
+        paddingVertical: 10,
+    },
+    resumeBtnText: {
+        color: theme.colors.text,
+        fontWeight: "600",
+    },
+    discardBtn: {
+        flex: 1,
+        alignItems: "center",
+        borderRadius: theme.borderRadius.sm,
+        borderWidth: 1,
+        borderColor: theme.colors.border,
+        backgroundColor: theme.colors.surface,
+        paddingVertical: 10,
+    },
+    discardBtnText: {
+        color: theme.colors.textSecondary,
+        fontWeight: "600",
+    },
     // --- Logging phase ---
     progressBar: {
         flexDirection: "row",
@@ -422,7 +685,13 @@ const styles = StyleSheet.create({
         color: theme.colors.textSecondary,
         textAlign: "center",
         marginTop: 4,
-        marginBottom: 16,
+        marginBottom: 4,
+    },
+    nextExercise: {
+        fontSize: 14,
+        color: theme.colors.textTertiary,
+        textAlign: "center",
+        marginBottom: 12,
     },
     inputRow: {
         flexDirection: "row",
@@ -468,11 +737,50 @@ const styles = StyleSheet.create({
         fontWeight: "600",
         fontSize: 16,
     },
+    actionRow: {
+        flexDirection: "row",
+        justifyContent: "space-evenly",
+        marginHorizontal: 16,
+        marginTop: 10,
+        gap: 8,
+    },
+    secondaryBtn: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 6,
+        borderWidth: 1,
+        borderRadius: theme.borderRadius.sm,
+        borderColor: theme.colors.border,
+        backgroundColor: theme.colors.surface,
+        paddingVertical: 8,
+        paddingHorizontal: 14,
+    },
+    secondaryBtnText: {
+        color: theme.colors.primary,
+        fontWeight: "600",
+        fontSize: 14,
+    },
+    skipBtn: {
+        alignItems: "center",
+        justifyContent: "center",
+        borderWidth: 1,
+        borderRadius: theme.borderRadius.sm,
+        borderColor: theme.colors.warning,
+        backgroundColor: theme.colors.surface,
+        paddingVertical: 8,
+        paddingHorizontal: 14,
+    },
+    skipBtnText: {
+        color: theme.colors.warning,
+        fontWeight: "600",
+        fontSize: 14,
+    },
     stopwatchContainer: {
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "center",
-        marginTop: 16,
+        marginTop: 12,
         gap: 8,
     },
     stopwatchText: {
@@ -481,7 +789,7 @@ const styles = StyleSheet.create({
         color: theme.colors.primary,
     },
     loggedSummary: {
-        marginTop: 16,
+        marginTop: 12,
         marginHorizontal: 16,
         flex: 1,
     },

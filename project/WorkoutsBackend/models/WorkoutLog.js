@@ -1,8 +1,9 @@
 import mongoose from 'mongoose';
 
 const setSchema = new mongoose.Schema({
-    reps: { type: Number, required: true },
-    weight: { type: Number, required: true },
+    reps: { type: Number },
+    weight: { type: Number },
+    skipped: { type: Boolean, default: false },
 }, { _id: false });
 
 const logExerciseSchema = new mongoose.Schema({
