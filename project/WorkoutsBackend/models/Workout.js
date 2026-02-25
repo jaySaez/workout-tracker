@@ -3,7 +3,6 @@ import mongoose from 'mongoose';
 const exerciseSchema = new mongoose.Schema({
     name: { type: String, required: true },
     sets: { type: Number, required: true },
-    reps: { type: Number },
 }, { _id: false });
 
 const workoutSchema = new mongoose.Schema({

@@ -58,7 +58,6 @@ export default function EditWorkout() {
             ...existingExercises.map((e) => ({
                 name: e.name,
                 sets: e.sets,
-                ...(e.reps != null ? { reps: e.reps } : {}),
             })),
             ...exercises.map((e) => ({
                 name: e.name,
