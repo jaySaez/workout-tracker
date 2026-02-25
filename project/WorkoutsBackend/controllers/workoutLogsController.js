@@ -28,6 +28,19 @@ export const addWorkoutLogs = async (req, res) => {
     }
 };
 
+export const getLatestWorkoutLog = async (req, res) => {
+    try {
+        const log = await WorkoutLog.findOne({ workoutId: req.params.workoutId })
+            .sort({ performedAt: -1 });
+        if (!log) {
+            return res.status(404).json({ error: 'No logs found for this workout' });
+        }
+        res.json(log);
+    } catch (err) {
+        res.status(400).json({ error: err.message });
+    }
+};
+
 export const deleteWorkoutLog = async (req, res) => {
     try {
         const deleted = await WorkoutLog.findByIdAndDelete(req.params.workoutLogId);

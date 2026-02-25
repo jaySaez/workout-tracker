@@ -107,6 +107,16 @@ export default function WorkoutDetailPage() {
                         <Text style={styles.logDate}>
                             {new Date(item.performedAt).toLocaleString()}
                         </Text>
+                        {item.exercises && item.exercises.length > 0 && item.exercises.map((ex, ei) => (
+                            <View key={ei} style={styles.logExerciseBlock}>
+                                <Text style={styles.logExerciseName}>{ex.name}</Text>
+                                {ex.sets.map((s, si) => (
+                                    <Text key={si} style={styles.logSetText}>
+                                        Set {si + 1}: {s.reps} reps × {s.weight} lbs
+                                    </Text>
+                                ))}
+                            </View>
+                        ))}
                         {item.notes ? (
                             <Text style={styles.logNotes}>{item.notes}</Text>
                         ) : null}
@@ -157,6 +167,19 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: theme.colors.textSecondary,
         marginTop: 4,
+    },
+    logExerciseBlock: {
+        marginTop: 6,
+    },
+    logExerciseName: {
+        fontSize: 14,
+        fontWeight: "600",
+        color: theme.colors.text,
+    },
+    logSetText: {
+        fontSize: 13,
+        color: theme.colors.textSecondary,
+        marginLeft: 8,
     },
     errorText: {
         color: theme.colors.text,

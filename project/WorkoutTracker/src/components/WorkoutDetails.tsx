@@ -1,15 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
-import { Workout } from "./types";
+import { Workout, WorkoutLog } from "./types";
 import { BASE_URL } from "../config";
 import { theme } from "../theme";
-
-type WorkoutLog = {
-    _id: string;
-    workoutId: string;
-    performedAt: string;
-    notes?: string;
-};
 
 type Props = Workout;
 
@@ -73,7 +66,11 @@ export default function WorkoutDetails({ _id, title, exercises }: Props) {
         <View style={styles.card}>
             <Text style={styles.title}>{title}</Text>
 
-            <Text style={styles.exercises}>{exercises}</Text>
+            {exercises.map((ex, i) => (
+                <Text key={i} style={styles.exerciseText}>
+                    • {ex.name}  {ex.sets} × {ex.reps}
+                </Text>
+            ))}
 
             <View style={styles.divider} />
 
@@ -114,10 +111,10 @@ const styles = StyleSheet.create({
         color: theme.colors.text,
         marginBottom: 8,
     },
-    exercises: {
-        fontSize: 16,
+    exerciseText: {
+        fontSize: 15,
         color: theme.colors.textSecondary,
-        marginTop: 4,
+        marginTop: 2,
     },
     divider: {
         height: 1,
