@@ -59,6 +59,7 @@ export default function Home() {
                             workoutId={item.workoutId}
                             performedAt={item.performedAt}
                             notes={item.notes}
+                            exercises={item.exercises}
                             onDeleted={(id) => {
                                 setLogs((prev) => prev.filter((log) => log._id !== id));
                             }}

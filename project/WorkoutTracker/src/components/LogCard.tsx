@@ -8,7 +8,7 @@ type Props = WorkoutLog & {
     onDeleted?: (id: string) => void;
 };
 
-export default function LogCard({ _id, workoutId, performedAt, notes, onDeleted }: Props) {
+export default function LogCard({ _id, workoutId, performedAt, notes, exercises, onDeleted }: Props) {
     const [workoutTitle, setWorkoutTitle] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [deleting, setDeleting] = useState(false);
@@ -69,6 +69,16 @@ export default function LogCard({ _id, workoutId, performedAt, notes, onDeleted 
                     <Text style={styles.subtitle}>
                         Performed at: {performedLabel}
                     </Text>
+                    {exercises && exercises.length > 0 && exercises.map((ex, ei) => (
+                        <View key={ei} style={styles.exerciseBlock}>
+                            <Text style={styles.exerciseName}>{ex.name}</Text>
+                            {ex.sets.map((s, si) => (
+                                <Text key={si} style={styles.setText}>
+                                    Set {si + 1}: {s.reps} reps × {s.weight} lbs
+                                </Text>
+                            ))}
+                        </View>
+                    ))}
                     {notes ? (
                         <Text style={styles.notes}>
                             Notes: {notes}
@@ -119,6 +129,19 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: theme.colors.textSecondary,
         marginTop: 4,
+    },
+    exerciseBlock: {
+        marginTop: 6,
+    },
+    exerciseName: {
+        fontSize: 14,
+        fontWeight: "600",
+        color: theme.colors.text,
+    },
+    setText: {
+        fontSize: 13,
+        color: theme.colors.textSecondary,
+        marginLeft: 8,
     },
     error: {
         fontSize: 12,
