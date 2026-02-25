@@ -440,9 +440,8 @@ export default function CreateWorkoutLog() {
         const completedSets = loggedExercises.reduce((s, e) => s + e.sets.length, 0);
 
         // Determine next exercise
-        const isLastSetOfExercise = currentSetIdx + 1 >= exercise.sets;
         const isLastExercise = currentExerciseIdx + 1 >= selectedWorkout.exercises.length;
-        const nextExerciseName = (!isLastExercise && isLastSetOfExercise)
+        const nextExerciseName = !isLastExercise
             ? selectedWorkout.exercises[currentExerciseIdx + 1].name
             : null;
 
